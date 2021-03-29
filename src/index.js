@@ -1,5 +1,5 @@
 let addToy = false;
-const toyFormContainer = document.querySelector(".container");
+// const toyFormContainer = document.querySelector(".container");
 
 document.addEventListener("DOMContentLoaded", () => {
     fetchToys()
@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
     addLike()
   })
 
-addBtn.addEventListener("click", () => {
+"new-toy-btn".addEventListener("click", () => {
     // hide & seek with the form
     addToy = !addToy;
     if (addToy) {
@@ -16,13 +16,13 @@ addBtn.addEventListener("click", () => {
       toyFormContainer.style.display = "none";
     }
 })
-
+//fetch Andy's toys
 function fetchToys(){
   fetch("http://localhost:3000/toys")
   .then(resp => resp.json())
   .then(toys => displayToys(toys))
 }
-
+//add the toy card
 function displayToys(toys){
   toys.forEach(toy => {
     makeToyCard(toy)
@@ -49,8 +49,8 @@ function makeToyCard(toy) {
 
   collection.appendChild(toyCard);
 }
-
-function addNewToyListener() {
+//add new toy
+function addNewToy() {
   const form = document.querySelector('.add-toy-form')
   form.addEventListener('submit', (event) => {
     event.preventDefault();
@@ -60,3 +60,54 @@ function addNewToyListener() {
   })
 }
 
+function addNewToy(name, image) {
+  const reqObj = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    },
+    body: JSON.stringify({
+      "name": name,
+      "image": image,
+      "likes": 0
+    })
+  }
+  fetch('http://localhost:3000/toys', reqObj)
+    .then(resp => resp.json())
+    .then(json => makeToyCard(json))
+    .catch(error => console.log(error))
+}
+// increase likes
+function updateLikes(toy) {
+  const reqObj = {
+    method: "PATCH",
+    headers: 
+    {
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    },
+    body:JSON.stringify(
+      {
+        "likes": parseInt(toy.children[2].innerHTML) + 1
+      })
+    }
+    fetch(`http://localhost:3000/toys/${toy.id}`, reqObj)
+    .then(resp => resp.json())
+    .then(json => updateCard(json))
+    .catch(error => console.log(error))
+  }
+
+  function updateCard(toy) {
+    const card = document.getElementById(`${toy.id}`)
+    card.children[2].innerText = `${toy.likes} likes`
+  }
+
+  function addLike(){
+    document.addEventListener('click', (event) => {
+      if (event.target.className === 'like-btn') {
+        console.log(parseInt(event.target.parentNode.children[2].innerHTML)+1)
+        updateLikes(event.target.parentNode)
+    }
+  })
+}
